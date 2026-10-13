@@ -1,0 +1,22 @@
+{
+  "name": "digiarchivo",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Explorador de Digimon que consume la Digi-API con fetch y async/await (Vite + módulos ES)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "digimon",
+    "digi-api",
+    "fetch",
+    "async-await",
+    "vite"
+  ],
+  "devDependencies": {
+    "vite": "^8.3.4"
+  }
+}
