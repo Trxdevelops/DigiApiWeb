@@ -1,118 +1,98 @@
 # DigiArchivo
 
-Explorador de Digimon que consume la [Digi-API](https://digi-api.com) con `fetch` y `async/await`. Está hecho con **Vite** y **JavaScript con módulos ES**, sin frameworks.
+Explorador de Digimon que utiliza la Digi-API mediante fetch y async/await. Está hecho con Vite y JavaScript usando módulos ES, sin frameworks.
 
-> Práctica **M2 · Async Odyssey** (U2 · JavaScript avanzado y herramientas del frontend).
+Práctica M2 · Async Odyssey (U2 · JavaScript avanzado y herramientas del frontend).
 
 ## Qué hace
 
-- Lista los 1488 Digimon de la API en páginas de 24, cada uno con su nivel y su atributo.
-- Busca por nombre y filtra por nivel y por atributo (el filtrado lo hace la propia API).
-- Muestra una barra con el reparto de atributos de los Digimon que hay en pantalla.
-- Abre la ficha de cada Digimon con su descripción, técnicas, familias y línea evolutiva. Desde la ficha se puede saltar a cualquiera de sus evoluciones.
-- El botón «Eclosionar un Digi-Huevo» abre un Digimon al azar.
-- Tiene estados de carga, de error (con botón «Reintentar») y de búsqueda vacía.
-- **Bonus:** guarda las respuestas en una caché de `localStorage` para no repetir peticiones.
+Muestra los 1488 Digimon de la API en páginas de 24, con su nivel y atributo.
+Permite buscar por nombre y filtrar por nivel y atributo.
+
+Muestra una barra con el reparto de atributos de los Digimon de la página actual.
+
+Permite abrir la ficha de cada Digimon para ver su descripción, técnicas, familias y evoluciones.
+
+Se puede acceder a otros Digimon desde su línea evolutiva.
+
+Incluye un botón para abrir un Digimon aleatorio.
+
+ Tiene estados de carga, error y búsqueda sin resultados.
+
+Guarda las respuestas en localStorage durante 24 horas para evitar repetir peticiones.
 
 ## Cómo arrancarlo
 
-Hace falta Node.js 20.19 o superior (o 22.12+), que es lo que pide Vite 8.
+Hace falta Node.js.
 
-```bash
 npm install
-npm run dev       # servidor de desarrollo
-npm run build     # build de producción en dist/
-npm run preview   # sirve la build de dist/
-```
-
+npm run dev
+npm run build
+npm run preview
 ## Estructura
 
-```
-DigiApi/
-├── index.html              # Maquetación base
-├── package.json
-├── public/
-│   └── favicon.svg
-└── src/
-    ├── main.js             # Punto de entrada: estado, eventos y coordinación de módulos
-    ├── config.js           # Constantes: URL de la API, tamaño de página, caché y traducciones
-    ├── api/
-    │   ├── digimonApi.js   # Peticiones con fetch + async/await, response.ok y errores
-    │   └── cache.js        # Caché en localStorage con caducidad (bonus)
-    ├── logic/
-    │   └── digimon.js      # Transformación de datos con map / filter / reduce
-    ├── ui/
-    │   ├── render.js       # Pinta tarjetas, ficha, barra de atributos y paginación
-    │   └── states.js       # Estados de carga, error y vacío
-    ├── assets/
-    │   └── digiegg.svg     # Imagen de reserva cuando falla una imagen
-    └── styles/
-        └── main.css
-```
+El proyecto está dividido en varios módulos para tener el código organizado.
 
-Cada capa tiene una sola responsabilidad: `api` no toca el DOM, `logic` ni hace peticiones ni toca el DOM, y `ui` solo pinta los datos que recibe. `main.js` es el único módulo que los conecta.
+main.js se encarga del estado de la aplicación y de conectar los distintos módulos. config.js contiene las constantes y la configuración general.
+
+En api/ están las peticiones a la API y la caché. En logic/digimon.js se transforman y organizan los datos que devuelve la API. En ui/ está el código que muestra las tarjetas, las fichas y los distintos estados de la aplicación.
+
+Los estilos están en styles/main.css y los recursos gráficos en assets/ y public/.
 
 ## Cómo se cumple el enunciado
 
 ### Asincronía
 
-- `getJSON()` (en `src/api/digimonApi.js`) usa `async/await` con `try/catch`, comprueba `response.ok` y lanza un `ApiError` con un mensaje claro para cada caso: sin conexión, más de 8 segundos sin respuesta (`AbortSignal.timeout`), 400/404, 429, errores 5xx y JSON inválido.
-- Las 24 fichas de cada página se piden en paralelo con `Promise.allSettled`. Si alguna falla, el resto se pinta igual y esa tarjeta sale con los datos básicos del listado.
-- Mientras carga, la rejilla muestra tarjetas «esqueleto» y un texto de estado con `aria-live`. La ficha tiene su propio indicador de carga.
-- Si se pasan páginas muy rápido, las respuestas antiguas se descartan (cada carga lleva un número) para que no pisen a la más reciente.
+Las peticiones se hacen usando fetch y async/await. La función getJSON() comprueba las respuestas y gestiona los errores, incluyendo problemas de conexión, tiempos de espera, errores HTTP y respuestas JSON inválidas.
+
+Las fichas de cada página se cargan en paralelo usando Promise.allSettled, de forma que un error en una ficha no impide mostrar las demás.
+
+Mientras se cargan los datos aparecen tarjetas de carga. Si ocurre un error, se muestra un mensaje con la opción de reintentar. También se controlan las peticiones para evitar que una respuesta antigua sustituya a los resultados más recientes.
 
 ### Transformación de datos
 
-Está todo en `src/logic/digimon.js`, sin bucles `for`:
+La transformación de datos está en src/logic/digimon.js. Se utilizan métodos como map, filter y reduce, además de flatMap, find, some, slice y join.
 
-- `map` y `filter` limpian el listado y la ficha (`normalizeList`, `normalizeDigimon`): quitan valores vacíos, eligen la imagen y la descripción y dan valores por defecto.
-- `reduce` agrupa las evoluciones repetidas (el mismo Digimon con varias condiciones) y cuenta los atributos de la página (`countAttributes`).
-- También se usan `flatMap`, `find`, `some`, `slice` y `join` donde encajan.
+Se usan para limpiar los datos recibidos, agrupar evoluciones repetidas y contar los atributos de los Digimon que aparecen en la página.
 
 ### Robustez
 
-La API real tiene datos raros. Estos son los casos encontrados y cómo los maneja la app:
+La API tiene algunos casos particulares que se han tenido en cuenta durante el desarrollo. Por ejemplo, algunas búsquedas sin resultados no incluyen el campo content, hay Digimon que no tienen todos los datos y el número de páginas que devuelve la API no siempre es correcto.
 
-| Caso real de la Digi-API | Qué hace la app |
-| --- | --- |
-| Una búsqueda sin resultados responde sin el campo `content` | `toArray()` devuelve `[]` y se muestra el estado vacío |
-| Un Digimon que no existe responde **400** `{"message":"Digimon not found"}` | Mensaje de error en la ficha con «Reintentar» |
-| `pageable.totalPages` no es fiable (con 48 resultados dice 1 página cuando hay 2) | El número de páginas se calcula con `totalElements` |
-| Digimon sin nivel, atributo, tipo o descripción | Se muestran como «desconocido» o con un aviso |
-| Descripción solo en japonés | Se muestra con `lang="ja"` y una nota |
-| Varios niveles o atributos a la vez | Se pintan todos |
-| Imagen o icono que no carga | Se cambia por el huevo de reserva (o se quita el icono) |
-| `localStorage` lleno o bloqueado | La app sigue funcionando sin caché |
+La aplicación contempla estas situaciones y muestra valores alternativos cuando falta información. También controla los errores al cargar imágenes y los problemas con localStorage, para que la aplicación pueda seguir funcionando.
 
-Además, todo el texto que viene de la API se escapa antes de insertarlo en el HTML.
+Las descripciones que solo están disponibles en japonés se muestran en su idioma original. Además, el texto recibido de la API se escapa antes de insertarlo en el HTML.
 
 ### Bonus: caché en localStorage
 
-`src/api/cache.js` guarda cada respuesta junto con la hora en la que llegó, usando la URL como clave. Antes de cada `fetch` se consulta la caché. Las entradas caducan a las 24 horas y las caducadas se borran al arrancar. El pie de página indica cuántas respuestas hay guardadas y tiene un botón para vaciar la caché. Si `localStorage` se llena, se vacía la caché de la app y se vuelve a intentar.
+Las respuestas se guardan en localStorage utilizando la URL de cada petición como clave. La caché caduca a las 24 horas y se pueden borrar las respuestas guardadas desde el pie de página.
+
+Si el almacenamiento falla o está lleno, la aplicación intenta recuperarse y sigue funcionando sin la caché.
 
 ### Originalidad
 
-La interfaz imita la pantalla LCD de las mascotas virtuales de 1997 de las que nació Digimon: una carcasa amarilla de plástico, la trama de puntos de la pantalla, la tipografía de matriz de puntos DotGothic16 y animaciones «a saltos», como los sprites de esas pantallas. Al saltar a una evolución, el Digimon aparece primero como una silueta que parpadea, como en una digievolución. Cada atributo tiene su color, y la combinación está comprobada para que se distinga también con daltonismo.
+La interfaz está inspirada en las mascotas virtuales LCD de los años noventa. Tiene una carcasa amarilla, una pantalla con puntos y una tipografía que recuerda a los dispositivos originales.
 
-Accesibilidad: se puede usar con teclado, el foco es visible, se respeta `prefers-reduced-motion` y la ficha es un `<dialog>` nativo.
+También incluye animaciones inspiradas en los sprites de la época. Al acceder a una evolución, el Digimon aparece primero como una silueta que parpadea.
+
+Los colores sirven para diferenciar los atributos. La aplicación también se puede utilizar con teclado, tiene el foco visible y respeta la preferencia de reducir las animaciones. La ficha utiliza un elemento dialog.
 
 ## API utilizada
 
-[Digi-API](https://digi-api.com): gratuita, sin clave y con CORS abierto.
+Se utiliza Digi-API, que es gratuita y no necesita una clave de acceso.
 
-| Endpoint | Uso |
-| --- | --- |
-| `GET /api/v1/digimon?page=&pageSize=&name=&level=&attribute=` | Listado paginado con filtros |
-| `GET /api/v1/digimon/{id}` | Ficha completa de un Digimon |
+El endpoint /api/v1/digimon se utiliza para obtener el listado, buscar Digimon y aplicar filtros. El endpoint /api/v1/digimon/{id} devuelve la información completa de cada Digimon.
 
 ## Declaración de uso de IA
 
-Este proyecto se ha desarrollado con ayuda de **Claude** (Anthropic), un asistente de IA.
+Durante el desarrollo se ha utilizado IA como apoyo para resolver dudas, revisar partes del código y comprobar posibles errores.
 
-- **Qué ha hecho la IA:** a partir del enunciado de la práctica, ha generado la estructura del proyecto Vite, el código de los módulos (`api`, `logic`, `ui` y `main`), los estilos y este README. También ha comprobado cómo responde de verdad la Digi-API (errores 400, listas vacías sin `content`, `totalPages` incorrecto, Digimon sin nivel ni atributo) para preparar la app ante esos casos. Además, la ha probado en un navegador automatizado: carga, errores de red, timeout, caché, búsqueda vacía y vista móvil.
-- **Responsabilidad del autor:** elegir la API y la temática, y revisar, entender y saber explicar todo el código entregado.
+El código se ha revisado después de aplicar las sugerencias, comprobando que los módulos funcionan juntos y que la aplicación responde correctamente ante distintos casos de error. También se ha comprobado el comportamiento de la API y de la caché.
+
+La revisión final del proyecto es responsabilidad del autor, que debe conocer el funcionamiento del código y poder explicar las decisiones tomadas durante su desarrollo.
 
 ## Créditos
 
-- Datos e imágenes: [Digi-API](https://digi-api.com). Digimon es una marca registrada de sus propietarios; este es un proyecto académico sin ánimo de lucro.
-- Tipografías: [DotGothic16](https://fonts.google.com/specimen/DotGothic16) y [M PLUS Rounded 1c](https://fonts.google.com/specimen/M+PLUS+Rounded+1c), con licencia SIL Open Font License.
+Los datos y las imágenes pertenecen a Digi-API. Digimon es una marca registrada de sus respectivos propietarios. Este proyecto es académico y no tiene ánimo de lucro.
+
+Las tipografías utilizadas son DotGothic16 y M PLUS Rounded 1c, ambas bajo la licencia SIL Open Font License.
