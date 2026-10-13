@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Explorador de Digimon que consume la Digi-API: búsqueda por nombre, filtros por nivel y atributo y líneas de digievolución."
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+Rounded+1c:wght@400;700&display=swap"
+    />
+    <title>DigiArchivo</title>
+  </head>
+  <body>
+    <header class="shell">
+      <div class="screen">
+        <div class="screen-text">
+          <h1 class="logo">DigiArchivo</h1>
+          <p class="intro">
+            Explora los <span id="total-count">1488</span> Digimon de la Digi-API: búscalos por nombre, filtra por
+            nivel y atributo y sigue sus digievoluciones.
+          </p>
+        </div>
+        <svg id="egg" class="egg" viewBox="0 0 16 17" shape-rendering="crispEdges" aria-hidden="true">
+          <path d="M6 0h4v1h-4zM4 1h2v1h-2zM10 1h2v1h-2zM3 2h1v1h-1zM12 2h1v1h-1zM2 3h1v1h-1zM13 3h1v1h-1zM2 4h1v1h-1zM6 4h2v1h-2zM13 4h1v1h-1zM1 5h1v1h-1zM6 5h2v1h-2zM10 5h2v1h-2zM14 5h1v1h-1zM1 6h1v1h-1zM10 6h2v1h-2zM14 6h1v1h-1zM1 7h1v1h-1zM14 7h1v1h-1zM0 8h1v1h-1zM3 8h1v1h-1zM7 8h1v1h-1zM11 8h1v1h-1zM15 8h1v1h-1zM0 9h1v1h-1zM2 9h1v1h-1zM4 9h1v1h-1zM6 9h1v1h-1zM8 9h1v1h-1zM10 9h1v1h-1zM12 9h1v1h-1zM14 9h2v1h-2zM0 10h2v1h-2zM5 10h1v1h-1zM9 10h1v1h-1zM13 10h1v1h-1zM15 10h1v1h-1zM0 11h1v1h-1zM15 11h1v1h-1zM0 12h1v1h-1zM4 12h2v1h-2zM15 12h1v1h-1zM1 13h1v1h-1zM4 13h2v1h-2zM10 13h2v1h-2zM14 13h1v1h-1zM1 14h1v1h-1zM10 14h2v1h-2zM14 14h1v1h-1zM2 15h2v1h-2zM12 15h2v1h-2zM4 16h8v1h-8z" />
+        </svg>
+      </div>
+      <div class="shell-controls">
+        <button id="egg-button" class="button button-egg" type="button">Eclosionar un Digi-Huevo</button>
+        <p class="egg-hint">Abre la ficha de un Digimon al azar.</p>
+      </div>
+    </header>
+
+    <main class="page">
+      <form id="search-form" class="toolbar" role="search">
+        <div class="field field-name">
+          <label for="search-name">Nombre</label>
+          <input id="search-name" name="name" type="search" placeholder="Agumon, Gabumon…" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="filter-level">Nivel</label>
+          <select id="filter-level" name="level">
+            <option value="">Todos los niveles</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="filter-attribute">Atributo</label>
+          <select id="filter-attribute" name="attribute">
+            <option value="">Todos los atributos</option>
+          </select>
+        </div>
+        <div class="toolbar-actions">
+          <button class="button" type="submit">Buscar</button>
+          <button id="clear-filters" class="button button-ghost" type="button" hidden>Limpiar filtros</button>
+        </div>
+      </form>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+      <section id="stats" class="stats" aria-label="Resumen de atributos" hidden></section>
+      <div id="results" class="results"></div>
+
+      <nav id="pagination" class="pagination" aria-label="Paginación" hidden>
+        <button id="prev-page" class="button" type="button" disabled>Anterior</button>
+        <span id="page-info" class="page-info"></span>
+        <button id="next-page" class="button" type="button" disabled>Siguiente</button>
+      </nav>
+    </main>
+
+    <footer class="footer">
+      <p>
+        Datos e imágenes de la <a href="https://digi-api.com" target="_blank" rel="noopener">Digi-API</a>. Digimon es
+        una marca registrada de sus propietarios; este es un proyecto académico sin ánimo de lucro.
+      </p>
+      <div class="cache">
+        <p id="cache-info">La caché local está vacía.</p>
+        <button id="clear-cache" class="button button-ghost" type="button">Vaciar caché</button>
+      </div>
+    </footer>
+
+    <dialog id="detail" class="detail-dialog" aria-labelledby="detail-title">
+      <div class="dialog-bar">
+        <button id="close-detail" class="button button-ghost" type="button">Cerrar</button>
+      </div>
+      <div id="detail-content" class="dialog-body"></div>
+    </dialog>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
